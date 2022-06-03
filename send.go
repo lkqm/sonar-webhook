@@ -12,31 +12,31 @@ import (
 	"strings"
 )
 
-type RobotMessageSender func(key string, sonarToken string, data *sonar.WebhookData) error
+type RobotMessageSender func(p *RobotWebhookParameters, data *sonar.WebhookData) error
 
 // SendDingTalkRobotMessage 发送钉钉机器人消息
-func SendDingTalkRobotMessage(key string, sonarToken string, data *sonar.WebhookData) error {
-	message, err := buildMessageContent(data, sonarToken)
+func SendDingTalkRobotMessage(p *RobotWebhookParameters, data *sonar.WebhookData) error {
+	message, err := buildMessageContent(data, p.SonarToken)
 	if err != nil {
 		return err
 	}
-	client := dingtalk.NewRobotClient(key)
+	client := dingtalk.NewRobotClient(p.Key)
 	return client.SendTextMessage(message)
 }
 
 // SendWeComRobotMessage 发送企微机器人消息
-func SendWeComRobotMessage(key string, sonarToken string, data *sonar.WebhookData) error {
-	message, err := buildMessageContent(data, sonarToken)
+func SendWeComRobotMessage(p *RobotWebhookParameters, data *sonar.WebhookData) error {
+	message, err := buildMessageContent(data, p.SonarToken)
 	if err != nil {
 		return err
 	}
-	client := wecom.NewRobotClient(key)
+	client := wecom.NewRobotClient(p.Key)
 	return client.SendTextMessage(message)
 }
 
 // SendWeComMessage 发送企微应用消息
-func SendWeComMessage(config *WeComConfig, sonarToken string, data *sonar.WebhookData) error {
-	text, err := buildMessageContent(data, sonarToken)
+func SendWeComMessage(p *WeComMessageParameters, data *sonar.WebhookData) error {
+	text, err := buildMessageContent(data, p.SonarToken)
 	if err != nil {
 		return err
 	}
@@ -46,6 +46,7 @@ func SendWeComMessage(config *WeComConfig, sonarToken string, data *sonar.Webhoo
 	}
 	userId := strings.Split(email, "@")[0]
 
+	config := p.WeComConfig
 	client := wecom.Client{
 		CorpId:     config.CorpId,
 		CorpSecret: config.CorpSecret,
@@ -67,12 +68,12 @@ func SendWeComMessage(config *WeComConfig, sonarToken string, data *sonar.Webhoo
 }
 
 // FeiShuRobotMessage 发送飞书机器人信息
-func FeiShuRobotMessage(key string, sonarToken string, data *sonar.WebhookData) error {
-	message, err := buildMessageContent(data, sonarToken)
+func FeiShuRobotMessage(p *RobotWebhookParameters, data *sonar.WebhookData) error {
+	message, err := buildMessageContent(data, p.SonarToken)
 	if err != nil {
 		return err
 	}
-	client := feishu.NewRobotClient(key)
+	client := feishu.NewRobotClient(p.Key)
 	return client.SendTextMessage(message)
 }
 
@@ -138,30 +139,4 @@ func getMeasuresComponent(data *sonar.WebhookData, sonarToken string) *sonar.Mea
 		return nil
 	}
 	return &response.Component
-}
-
-type WeComConfig struct {
-	CorpId     string `json:"corpId" form:"corpId" binding:"required"`         // 企业id
-	CorpSecret string `json:"corpSecret" form:"corpSecret" binding:"required"` // 企业密钥
-	AgentId    int    `json:"agentId" form:"agentId" binding:"required"`       // 应用id
-}
-
-// MessageTemplateData 消息模板上下问数据
-type MessageTemplateData struct {
-	AnalysisResult    string                   // 质量门结果
-	Url               string                   // 结果访问url
-	WebhookData       *sonar.WebhookData       // webhook回调数据
-	MeasuresComponent *sonar.MeasuresComponent // 项目分支指标数据（原始数据）
-	Measure           *MeasuresData            // 项目分支指标数据
-}
-
-type MeasuresData struct {
-	Bugs                   string // Bugs数
-	Vulnerabilities        string // 漏洞数
-	CodeSmells             string // 异味数
-	DuplicatedLinesDensity string // 代码行重复率
-	ReliabilityRating      string // 可维护性
-	SecurityRating         string // 安全评级
-	SqaleRating            string // Sqale评级
-	Coverage               string // 单元测试覆盖率
 }

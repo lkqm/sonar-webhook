@@ -29,6 +29,10 @@ type WebhookData struct {
 	Properties  Properties  `json:"properties"`  // 附加属性
 }
 
+func (w WebhookData) IsQualityGateSuccess() bool {
+	return w.QualityGate.Status == StatusOk || w.QualityGate.Status == StatusSuccess
+}
+
 type Project struct {
 	Key  string `json:"key"`  // 项目标识
 	Name string `json:"name"` // 项目名称

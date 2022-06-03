@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"log"
 	"sonar-webhook/sonar"
 )
 
@@ -29,15 +30,27 @@ func FeiShuRobotHandle(c *gin.Context) {
 }
 
 func robotHandle(c *gin.Context, sender RobotMessageSender) {
-	key := c.Query("key")
-	sonarToken := c.Query("sonarToken")
+	// 参数绑定
+	p := new(RobotWebhookParameters)
+	err := c.BindQuery(p)
+	if err != nil {
+		c.JSON(400, NewResultFail(400, "bind parameter failed: "+err.Error()))
+		return
+	}
 	data := new(sonar.WebhookData)
-	err := c.BindJSON(data)
+	err = c.BindJSON(data)
 	if err != nil {
 		c.JSON(400, NewResultFail(400, "parse request body error: "+err.Error()))
 		return
 	}
-	err = sender(key, sonarToken, data)
+
+	// 成功跳过
+	if data.IsQualityGateSuccess() && p.SkipSuccess {
+		log.Printf("skip send message when quality gate success")
+		return
+	}
+
+	err = sender(p, data)
 	if err != nil {
 		c.JSON(500, NewResultFail(1, "request third failed: "+err.Error()))
 		return
@@ -47,15 +60,13 @@ func robotHandle(c *gin.Context, sender RobotMessageSender) {
 
 // WeComMessageHandle 企微应用消息通知处理方法
 func WeComMessageHandle(c *gin.Context) {
-	config := new(WeComConfig)
-	sonarToken := c.Query("sonarToken")
-
-	err := c.BindQuery(config)
+	// 参数绑定
+	p := new(WeComMessageParameters)
+	err := c.BindQuery(p)
 	if err != nil {
 		c.JSON(400, NewResultFail(400, "bind parameter failed: "+err.Error()))
 		return
 	}
-
 	data := new(sonar.WebhookData)
 	err = c.BindJSON(data)
 	if err != nil {
@@ -63,7 +74,13 @@ func WeComMessageHandle(c *gin.Context) {
 		return
 	}
 
-	err = SendWeComMessage(config, sonarToken, data)
+	// 成功跳过
+	if data.IsQualityGateSuccess() && p.SkipSuccess {
+		log.Printf("skip send message when quality gate success")
+		return
+	}
+
+	err = SendWeComMessage(p, data)
 	if err != nil {
 		c.JSON(500, NewResultFail(1, "request third failed: "+err.Error()))
 		return

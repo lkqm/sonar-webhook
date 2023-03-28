@@ -6,6 +6,7 @@ SonarQube扫描检测结果webhook回调适配服务，实现钉钉机器人、�
 - 企微机器人：`/wecom/robot?key=xxx`
 - 企微应用消息: `/wecom/message?corpId=xxx&corpSecret=xxx&agentId=x`
 - 飞书机器人: `/feishu/robot?key=xxx`
+- 飞书应用消息: `/feishu/message?appId=xxx&appSecret=xxx`
 
 ## 安装
 

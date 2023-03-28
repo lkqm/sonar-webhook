@@ -7,12 +7,23 @@ import (
 	"net/http"
 )
 
-func HttpPostJson(url string, data interface{}) (string, error) {
+func HttpPostJson(url string, data interface{}, headers map[string]string) (string, error) {
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
 		return "", err
 	}
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(dataBytes))
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(dataBytes))
+	if err != nil {
+		return "", err
+	}
+	if headers != nil {
+		for key, value := range headers {
+			req.Header.Add(key, value)
+		}
+	}
+	req.Header.Add("Content-Type", "application/json")
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -25,8 +36,8 @@ func HttpPostJson(url string, data interface{}) (string, error) {
 	return string(respBytes), nil
 }
 
-func HttpPostEntity(url string, data interface{}, returnData interface{}) (string, error) {
-	content, err := HttpPostJson(url, data)
+func HttpPostEntity(url string, data interface{}, returnData interface{}, headers map[string]string) (string, error) {
+	content, err := HttpPostJson(url, data, headers)
 	if err != nil {
 		return "", err
 	}

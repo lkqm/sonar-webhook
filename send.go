@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"html/template"
 	"log"
@@ -75,6 +76,36 @@ func FeiShuRobotMessage(p *RobotWebhookParameters, data *sonar.WebhookData) erro
 	}
 	client := feishu.NewRobotClient(p.Key)
 	return client.SendTextMessage(message)
+}
+
+// SendFeiShuMessage 发送飞书应用消息
+func SendFeiShuMessage(p *FeiShuMessageParameters, data *sonar.WebhookData) error {
+	text, err := buildMessageContent(data, p.SonarToken)
+	if err != nil {
+		return err
+	}
+	email := strings.TrimSpace(data.Properties.SonarAnalysisUserEmail)
+	if email == "" {
+		return errors.New("properties [sonar.analysis.userEmail] can't be empty")
+	}
+
+	config := p.FeiShuConfig
+	client := feishu.Client{AppId: config.AppId, AppSecret: config.AppSecret}
+	contentObj := feishu.MessageContentText{Text: text}
+	contentBytes, err := json.Marshal(contentObj)
+	if err != nil {
+		return err
+	}
+	request := feishu.SendMessageRequest{
+		ReceiveId: email,
+		MsgType:   "text",
+		Content:   string(contentBytes),
+	}
+	_, err = client.SendMessage("email", request)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func buildMessageContent(data *sonar.WebhookData, sonarToken string) (string, error) {

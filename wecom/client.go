@@ -47,7 +47,7 @@ func (client Client) SendMessage(message Message) (string, error) {
 
 	response := new(SendMessageResponse)
 	url := BaseUrl + fmt.Sprintf("/cgi-bin/message/send?access_token=%s", token)
-	if content, err := util.HttpPostEntity(url, message, response); err != nil {
+	if content, err := util.HttpPostEntity(url, message, response, nil); err != nil {
 		log.Printf("list user by department failed, the result: %s", content)
 		return "", err
 	}

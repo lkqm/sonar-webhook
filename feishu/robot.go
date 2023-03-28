@@ -20,7 +20,7 @@ func NewRobotClient(token string) RobotClient {
 // SendMessage 发送消息
 func (robot RobotClient) SendMessage(message Message) error {
 	url := fmt.Sprintf(RobotWebhookUrl, robot.Token)
-	content, err := util.HttpPostJson(url, message)
+	content, err := util.HttpPostJson(url, message, nil)
 	if err != nil {
 		return err
 	}

@@ -12,6 +12,7 @@ func initRoute(g *gin.Engine) {
 	g.POST("/wecom/robot", WeComRobotHandle)
 	g.POST("/wecom/message", WeComMessageHandle)
 	g.POST("/feishu/robot", FeiShuRobotHandle)
+	g.POST("/feishu/message", FeiShuMessageHandle)
 }
 
 // DingTalkRobotHandle 钉钉机器人通知处理方法
@@ -81,6 +82,36 @@ func WeComMessageHandle(c *gin.Context) {
 	}
 
 	err = SendWeComMessage(p, data)
+	if err != nil {
+		c.JSON(500, NewResultFail(1, "request third failed: "+err.Error()))
+		return
+	}
+	c.JSON(200, NewResultOkEmpty())
+}
+
+// FeiShuMessageHandle 企微应用消息通知处理方法
+func FeiShuMessageHandle(c *gin.Context) {
+	// 参数绑定
+	p := new(FeiShuMessageParameters)
+	err := c.BindQuery(p)
+	if err != nil {
+		c.JSON(400, NewResultFail(400, "bind parameter failed: "+err.Error()))
+		return
+	}
+	data := new(sonar.WebhookData)
+	err = c.BindJSON(data)
+	if err != nil {
+		c.JSON(400, NewResultFail(400, "parse request body json error: "+err.Error()))
+		return
+	}
+
+	// 成功跳过
+	if data.IsQualityGateSuccess() && p.SkipSuccess {
+		log.Printf("skip send message when quality gate success")
+		return
+	}
+
+	err = SendFeiShuMessage(p, data)
 	if err != nil {
 		c.JSON(500, NewResultFail(1, "request third failed: "+err.Error()))
 		return

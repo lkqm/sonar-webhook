@@ -26,6 +26,18 @@ type WeComConfig struct {
 	AgentId    int    `json:"agentId" form:"agentId" binding:"required"`       // 应用id
 }
 
+// FeiShuMessageParameters 回调请求飞书消息参数
+type FeiShuMessageParameters struct {
+	FeiShuConfig
+	SonarToken  string `json:"sonarToken" form:"sonarToken"`   // SonarQue认证密钥
+	SkipSuccess bool   `json:"skipSuccess" form:"skipSuccess"` // 是否跳过质量门成功
+}
+
+type FeiShuConfig struct {
+	AppId     string `json:"appId" form:"appId" binding:"required"`         // 应用ID
+	AppSecret string `json:"appSecret" form:"appSecret" binding:"required"` // 应用密钥
+}
+
 //-----------------------------------
 // 模版消息上下文
 //-----------------------------------

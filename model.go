@@ -1,6 +1,6 @@
 package main
 
-import "sonar-webhook/sonar"
+import "sonar-webhook/sdks/sonar"
 
 //-----------------------------------
 // 请求参数

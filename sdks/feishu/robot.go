@@ -3,7 +3,7 @@ package feishu
 import (
 	"fmt"
 	"log"
-	"sonar-webhook/util"
+	"sonar-webhook/sdks/util"
 )
 
 const RobotWebhookUrl = "https://open.feishu.cn/open-apis/bot/v2/hook/%s"

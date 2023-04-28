@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"log"
-	"sonar-webhook/sonar"
+	"sonar-webhook/sdks/sonar"
 )
 
 // 路由配置

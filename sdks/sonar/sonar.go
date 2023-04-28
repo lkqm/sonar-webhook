@@ -3,7 +3,7 @@ package sonar
 import (
 	"fmt"
 	"net/http"
-	"sonar-webhook/util"
+	"sonar-webhook/sdks/util"
 )
 
 type SonarClient struct {

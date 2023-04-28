@@ -1,31 +1,31 @@
-package dingtalk
+package wecom
 
 import (
 	"fmt"
 	"log"
-	"sonar-webhook/util"
+	"sonar-webhook/sdks/util"
 )
 
-const RobotWebhookUrl = "https://oapi.dingtalk.com/robot/send?access_token=%s"
+const RobotWebhookUrl = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=%s"
 
 // RobotClient 机器人客户端
 type RobotClient struct {
-	AccessToken string
+	Key string
 }
 
-func NewRobotClient(accessToken string) RobotClient {
-	return RobotClient{AccessToken: accessToken}
+func NewRobotClient(key string) RobotClient {
+	return RobotClient{Key: key}
 }
 
 // SendMessage 发送消息
 func (robot RobotClient) SendMessage(message RobotMessage) error {
-	url := fmt.Sprintf(RobotWebhookUrl, robot.AccessToken)
+	url := fmt.Sprintf(RobotWebhookUrl, robot.Key)
 	content, err := util.HttpPostJson(url, message, nil)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("send robot message response content: %s", content)
+	log.Printf("send wecom message response content: %s", content)
 	return nil
 }
 
@@ -41,29 +41,27 @@ func (robot RobotClient) SendTextMessage(content string) error {
 }
 
 // SendMarkdownMessage 发送markdown消息
-func (robot RobotClient) SendMarkdownMessage(title, text string) error {
+func (robot RobotClient) SendMarkdownMessage(content string) error {
 	message := RobotMessage{
 		MsgType: "markdown",
 		Markdown: &Markdown{
-			Title: title,
-			Text:  text,
+			Content: content,
 		},
 	}
 	return robot.SendMessage(message)
 }
 
-// RobotMessage 机器人消息
+// RobotMessage 机器人webhook请求参数
 type RobotMessage struct {
 	MsgType  string    `json:"msgtype"`  // 消息类型
 	Text     *Text     `json:"text"`     // 文本消息
 	Markdown *Markdown `json:"markdown"` // markdown消息
 }
 
-type Text struct {
-	Content string `json:"content"` // 文本内容
+type Markdown struct {
+	Content string `json:"content"` // markdown内容
 }
 
-type Markdown struct {
-	Title string `json:"title"` // 标题
-	Text  string `json:"text"`  // 内容
+type Text struct {
+	Content string `json:"content"` // 文本内容
 }

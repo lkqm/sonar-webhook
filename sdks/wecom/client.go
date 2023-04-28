@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"sonar-webhook/util"
+	"sonar-webhook/sdks/util"
 	"time"
 )
 

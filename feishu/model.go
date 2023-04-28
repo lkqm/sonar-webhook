@@ -9,7 +9,7 @@ type Response struct {
 }
 
 func (response Response) IsOk() bool {
-	return response.Code == -1
+	return response.Code == 0
 }
 
 // AccessToken 接口访问token信息
@@ -24,8 +24,8 @@ func (token AccessToken) IsExpired() bool {
 
 // GetAccessTokenRequest 获取accessToken请求参数
 type GetAccessTokenRequest struct {
-	AppId     string `json:"appId"`     // 应用ID
-	AppSecret string `json:"appSecret"` // 应用密钥
+	AppId     string `json:"app_id"`     // 应用ID
+	AppSecret string `json:"app_secret"` // 应用密钥
 }
 
 // GetAccessTokenResponse 获取accessToken响应数据

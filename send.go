@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"html/template"
 	"log"
 	"sonar-webhook/dingtalk"
 	"sonar-webhook/feishu"
 	"sonar-webhook/sonar"
 	"sonar-webhook/wecom"
 	"strings"
+	"text/template"
 )
 
 type RobotMessageSender func(p *RobotWebhookParameters, data *sonar.WebhookData) error

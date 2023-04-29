@@ -30,12 +30,12 @@ func (client Client) GetAccessToken() (string, error) {
 		return "", err
 	}
 	token := AccessToken{
-		Token:    response.TenantAccessToken,
+		Token:    "Bearer " + response.TenantAccessToken,
 		ExpireAt: time.Now().UnixMilli() + int64(response.Expire)*1000,
 	}
 	tokenCaches[key] = token
 
-	return "Bearer " + token.Token, nil
+	return token.Token, nil
 }
 
 func (client Client) SendMessage(receiveIdType string, request SendMessageRequest) (*SendMessageResponse, error) {

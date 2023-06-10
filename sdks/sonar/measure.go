@@ -14,7 +14,15 @@ type MeasuresComponent struct {
 
 // Measure 指标
 type Measure struct {
-	Metric    string `json:"metric"`
+	Metric    string   `json:"metric"`
+	Value     string   `json:"value"`
+	BestValue bool     `json:"bestValue,omitempty"`
+	Period    Period  `json:"period"`
+	Periods   []Period `json:"periods"`
+}
+
+type Period struct {
+	Index     int    `json:"index"`
 	Value     string `json:"value"`
 	BestValue bool   `json:"bestValue,omitempty"`
 }

@@ -11,6 +11,7 @@ type RobotWebhookParameters struct {
 	Key         string `json:"key" form:"key" binding:"required"` // 访问密钥
 	SonarToken  string `json:"sonarToken" form:"sonarToken"`      // SonarQue认证密钥
 	SkipSuccess bool   `json:"skipSuccess" form:"skipSuccess"`    // 是否跳过质量门成功
+	NewCode     bool   `json:"newCode" form:"newCode"`            // 是否显示新代码指标
 }
 
 // WeComMessageParameters 机器人回掉请求参数
@@ -18,6 +19,7 @@ type WeComMessageParameters struct {
 	WeComConfig
 	SonarToken  string `json:"sonarToken" form:"sonarToken"`   // SonarQue认证密钥
 	SkipSuccess bool   `json:"skipSuccess" form:"skipSuccess"` // 是否跳过质量门成功
+	NewCode     bool   `json:"newCode" form:"newCode"`         // 是否显示新代码指标
 }
 
 type WeComConfig struct {
@@ -31,6 +33,7 @@ type FeiShuMessageParameters struct {
 	FeiShuConfig
 	SonarToken  string `json:"sonarToken" form:"sonarToken"`   // SonarQue认证密钥
 	SkipSuccess bool   `json:"skipSuccess" form:"skipSuccess"` // 是否跳过质量门成功
+	NewCode     bool   `json:"newCode" form:"newCode"`         // 是否显示新代码指标
 }
 
 type FeiShuConfig struct {
@@ -41,6 +44,13 @@ type FeiShuConfig struct {
 //-----------------------------------
 // 模版消息上下文
 //-----------------------------------
+
+// MessageBuildArgs 消息构建参数
+type MessageBuildArgs struct {
+	WebhookData *sonar.WebhookData
+	SonarToken  string
+	NewCode     bool
+}
 
 // MessageTemplateData 消息模板上下问数据
 type MessageTemplateData struct {

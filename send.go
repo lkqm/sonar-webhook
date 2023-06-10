@@ -17,7 +17,12 @@ type RobotMessageSender func(p *RobotWebhookParameters, data *sonar.WebhookData)
 
 // SendDingTalkRobotMessage 发送钉钉机器人消息
 func SendDingTalkRobotMessage(p *RobotWebhookParameters, data *sonar.WebhookData) error {
-	message, err := buildMessageContent(data, p.SonarToken)
+	buildArgs := MessageBuildArgs{
+		WebhookData: data,
+		SonarToken:  p.SonarToken,
+		NewCode:     p.NewCode,
+	}
+	message, err := buildMessageContent(buildArgs)
 	if err != nil {
 		return err
 	}
@@ -27,7 +32,12 @@ func SendDingTalkRobotMessage(p *RobotWebhookParameters, data *sonar.WebhookData
 
 // SendWeComRobotMessage 发送企微机器人消息
 func SendWeComRobotMessage(p *RobotWebhookParameters, data *sonar.WebhookData) error {
-	message, err := buildMessageContent(data, p.SonarToken)
+	buildArgs := MessageBuildArgs{
+		WebhookData: data,
+		SonarToken:  p.SonarToken,
+		NewCode:     p.NewCode,
+	}
+	message, err := buildMessageContent(buildArgs)
 	if err != nil {
 		return err
 	}
@@ -37,7 +47,12 @@ func SendWeComRobotMessage(p *RobotWebhookParameters, data *sonar.WebhookData) e
 
 // SendWeComMessage 发送企微应用消息
 func SendWeComMessage(p *WeComMessageParameters, data *sonar.WebhookData) error {
-	text, err := buildMessageContent(data, p.SonarToken)
+	buildArgs := MessageBuildArgs{
+		WebhookData: data,
+		SonarToken:  p.SonarToken,
+		NewCode:     p.NewCode,
+	}
+	text, err := buildMessageContent(buildArgs)
 	if err != nil {
 		return err
 	}
@@ -70,7 +85,12 @@ func SendWeComMessage(p *WeComMessageParameters, data *sonar.WebhookData) error 
 
 // FeiShuRobotMessage 发送飞书机器人信息
 func FeiShuRobotMessage(p *RobotWebhookParameters, data *sonar.WebhookData) error {
-	message, err := buildMessageContent(data, p.SonarToken)
+	buildArgs := MessageBuildArgs{
+		WebhookData: data,
+		SonarToken:  p.SonarToken,
+		NewCode:     p.NewCode,
+	}
+	message, err := buildMessageContent(buildArgs)
 	if err != nil {
 		return err
 	}
@@ -80,7 +100,12 @@ func FeiShuRobotMessage(p *RobotWebhookParameters, data *sonar.WebhookData) erro
 
 // SendFeiShuMessage 发送飞书应用消息
 func SendFeiShuMessage(p *FeiShuMessageParameters, data *sonar.WebhookData) error {
-	text, err := buildMessageContent(data, p.SonarToken)
+	buildArgs := MessageBuildArgs{
+		WebhookData: data,
+		SonarToken:  p.SonarToken,
+		NewCode:     p.NewCode,
+	}
+	text, err := buildMessageContent(buildArgs)
 	if err != nil {
 		return err
 	}
@@ -108,7 +133,11 @@ func SendFeiShuMessage(p *FeiShuMessageParameters, data *sonar.WebhookData) erro
 	return nil
 }
 
-func buildMessageContent(data *sonar.WebhookData, sonarToken string) (string, error) {
+func buildMessageContent(p MessageBuildArgs) (string, error) {
+	data := p.WebhookData
+	sonarToken := p.SonarToken
+	newCode := p.NewCode
+
 	tplData := new(MessageTemplateData)
 	tplMsg := `【代码检测结果】{{.AnalysisResult}}
 项目分支: {{.WebhookData.Project.Name}}({{.WebhookData.Branch.Name}}){{if .Measure}}
@@ -127,19 +156,7 @@ func buildMessageContent(data *sonar.WebhookData, sonarToken string) (string, er
 	// 项目指标信息
 	measuresComponent := getMeasuresComponent(data, sonarToken)
 	if measuresComponent != nil {
-		measuresData := new(MeasuresData)
-		for _, measure := range measuresComponent.Measures {
-			switch measure.Metric {
-			case "bugs":
-				measuresData.Bugs = measure.Value
-			case "vulnerabilities":
-				measuresData.Vulnerabilities = measure.Value
-			case "code_smells":
-				measuresData.CodeSmells = measure.Value
-			case "duplicated_lines_density":
-				measuresData.DuplicatedLinesDensity = measure.Value
-			}
-		}
+		measuresData := buildMeasuresData(measuresComponent, newCode)
 		tplData.Measure = measuresData
 	}
 	tpl, err := template.New("message").Parse(tplMsg)
@@ -153,6 +170,50 @@ func buildMessageContent(data *sonar.WebhookData, sonarToken string) (string, er
 	return buf.String(), nil
 }
 
+func buildMeasuresData(measuresComponent *sonar.MeasuresComponent, newCode bool) *MeasuresData {
+	measuresData := new(MeasuresData)
+	if newCode {
+		for _, measure := range measuresComponent.Measures {
+			switch measure.Metric {
+			case "new_bugs":
+				measuresData.Bugs = measure.Period.Value
+			case "new_vulnerabilities":
+				measuresData.Vulnerabilities = measure.Period.Value
+			case "new_code_smells":
+				measuresData.CodeSmells = measure.Value
+			case "new_duplicated_lines_density":
+				measuresData.DuplicatedLinesDensity = measure.Period.Value
+			}
+		}
+	} else {
+		for _, measure := range measuresComponent.Measures {
+			switch measure.Metric {
+			case "bugs":
+				measuresData.Bugs = measure.Value
+			case "vulnerabilities":
+				measuresData.Vulnerabilities = measure.Value
+			case "code_smells":
+				measuresData.CodeSmells = measure.Value
+			case "duplicated_lines_density":
+				measuresData.DuplicatedLinesDensity = measure.Value
+			}
+		}
+	}
+	if measuresData.Bugs == "" {
+		measuresData.Bugs = "0"
+	}
+	if measuresData.Vulnerabilities == "" {
+		measuresData.Vulnerabilities = "0"
+	}
+	if measuresData.CodeSmells == "" {
+		measuresData.CodeSmells = "0"
+	}
+	if measuresData.DuplicatedLinesDensity == "" {
+		measuresData.DuplicatedLinesDensity = "0.0"
+	}
+	return measuresData
+}
+
 func getMeasuresComponent(data *sonar.WebhookData, sonarToken string) *sonar.MeasuresComponent {
 	if sonarToken == "" {
 		return nil
@@ -162,8 +223,8 @@ func getMeasuresComponent(data *sonar.WebhookData, sonarToken string) *sonar.Mea
 		ServerUrl: data.ServerURL,
 		Token:     sonarToken,
 	}
-	response, err := client.GetMeasuresComponent(data.Project.Key, data.Branch.Name,
-		"bugs,reliability_rating,vulnerabilities,security_rating,code_smells,sqale_rating,duplicated_lines_density,coverage")
+	metricKeys := "bugs,reliability_rating,vulnerabilities,security_rating,code_smells,sqale_rating,duplicated_lines_density,coverage,new_bugs,new_reliability_rating,new_vulnerabilities,new_security_rating,new_code_smells,new_duplicated_lines_density,new_coverage"
+	response, err := client.GetMeasuresComponent(data.Project.Key, data.Branch.Name, metricKeys)
 
 	if err != nil {
 		log.Printf("get measures response failed: %v", err)

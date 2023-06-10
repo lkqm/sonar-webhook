@@ -16,3 +16,4 @@ SonarQube扫描检测结果webhook回调适配服务，实现钉钉机器人、�
 
 - sonarToken: SonarQube认证token，string类型，非必须，指定后会包含详细
 - skipSuccess: 是否跳过质量门成功情况，boolean类型，非必须，默认false
+- newCode: 是否显示新代码指标信息, boolean类型, 非必须, 默认false
